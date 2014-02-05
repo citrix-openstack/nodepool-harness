@@ -1,0 +1,52 @@
+script-dir: '../config/modules/openstack_project/files/nodepool/scripts/'
+dburi: 'sqlite://'
+
+cron:
+  cleanup: '*/1 * * * *'
+  update-image: '14 2 * * *'
+
+zmq-publishers:
+  - tcp://localhost:8888
+
+gearman-servers:
+  - host: localhost
+
+providers:
+  - name: rax-dfw
+    region-name: 'IAD'
+    service-type: 'compute'
+    service-name: 'cloudServersOpenStack'
+    username: 'Will be replaced by scripts'
+    password: 'Will be replaced by scripts'
+    project-id: 'Will be replaced by scripts'
+    auth-url: 'https://identity.api.rackspacecloud.com/v2.0/'
+    boot-timeout: 120
+    max-servers: 2
+    keypair: nodepoolharness
+    images:
+      - name: nh-xenserver
+        base-image: '62df001e-87ee-407c-b042-6f4e13f5d7e1'
+        min-ram: 8192
+        name-filter: 'Performance'
+        install: install_xenserver.sh
+        install_poll_interval: 10
+        install_poll_count: 80
+        install_status_file: /var/run/xenserver.ready
+        launch_poll_interval: 10
+        launch_poll_count: 40
+        launch_done_stamp: /var/run/xenserver.ready
+        setup: prepare_node.sh
+        username: 'root'
+        private-key: 'Will be replaced by scripts'
+
+targets:
+  - name: fake-jenkins
+    jenkins:
+      url: https://jenkins.example.org/
+      user: fake
+      apikey: fake
+    images:
+      - name: devstack-xenserver
+        min-ready: 1
+        providers:
+          - name: rax-dfw
